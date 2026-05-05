@@ -8,31 +8,37 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
   :root {
-    --sand: #fdf6fb;
-    --warm: #f0e4f4;
-    --terracotta: #d4829a;
-    --deep: #2d2438;
-    --moss: #6aab7e;
+    --sand: #faf7e8;
+    --warm: #ede8c8;
+    --terracotta: #5a7d62;
+    --deep: #2c3a2e;
+    --moss: #5a7d62;
     --ocean: #5b9ecf;
-    --gold: #e8c84a;
-    --light-text: #8a7a95;
-    --card-bg: #fff9fe;
-    --danger: #c0506a;
-    --pink: #f7b8cc;
-    --mint: #b8ecd4;
-    --sky: #b8d8f5;
-    --lemon: #f5edaa;
+    --gold: #d4c87a;
+    --light-text: #7a8a78;
+    --card-bg: #fdfbf0;
+    --danger: #b05040;
+    --pink: #e8ece6;
+    --mint: #e8ece6;
+    --sky: #f0edcc;
+    --lemon: #faf7e8;
+    --butter: #ede8c8;
+    --butter-dark: #b8a84a;
+    --butter-light: #faf7e8;
+    --accent: #5a7d62;
+    --accent-dark: #3d5c42;
+    --accent-light: #e8ece6;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--sand); font-family:'DM Sans',sans-serif; color:var(--deep); min-height:100vh; }
 
   /* HERO */
-  .hero { background:linear-gradient(135deg,#3d2d52 0%,#2d3d5c 50%,#1e4038 100%); color:#fff; padding:44px 32px 36px; position:relative; overflow:hidden; }
-  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 80% 20%,rgba(247,184,204,.2) 0%,transparent 50%),radial-gradient(ellipse at 10% 80%,rgba(91,158,207,.2) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(106,171,126,.15) 0%,transparent 50%); }
-  .hero::after { content:'✈'; position:absolute; right:5%; top:50%; transform:translateY(-50%) rotate(45deg); font-size:8rem; opacity:.04; }
+  .hero { background:linear-gradient(135deg,#1e2e20 0%,#2c3a2e 50%,#1a2a1c 100%); color:#fff; padding:44px 32px 36px; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 80% 20%,rgba(240,223,160,.12) 0%,transparent 50%),radial-gradient(ellipse at 10% 80%,rgba(168,200,160,.1) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(237,232,200,.08) 0%,transparent 50%); }
+  .hero-doodles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
   .hero-inner { position:relative; max-width:960px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
   .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3.6rem); line-height:1.1; margin-bottom:0; color:#fff; }
-  .hero h1 em { font-style:italic; color:#f5edaa; }
+  .hero h1 em { font-style:italic; color:#e8dfa0; }
   .stats-row { display:flex; gap:0; flex-wrap:wrap; background:rgba(255,255,255,.08); border-radius:16px; border:1px solid rgba(255,255,255,.12); overflow:hidden; }
   .stat { padding:16px 24px; text-align:center; border-right:1px solid rgba(255,255,255,.1); }
   .stat:last-child { border-right:none; }
@@ -44,7 +50,7 @@
   .stat-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.45); margin-top:3px; }
 
   /* SYNC BAR */
-  .sync-bar { background:linear-gradient(90deg,#5b4a7a,#2d5a7a); color:#fff; text-align:center; padding:9px 16px; font-size:12px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .sync-bar { background:linear-gradient(90deg,#3d5c42,#4a6d52); color:#fff; text-align:center; padding:9px 16px; font-size:12px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:10px; }
   .sync-bar button { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); color:#fff; border-radius:6px; padding:3px 12px; font-size:11px; cursor:pointer; font-family:inherit; transition:background .2s; }
   .sync-bar button:hover { background:rgba(255,255,255,.35); }
   .sync-dot { width:7px; height:7px; border-radius:50%; background:#fff; display:inline-block; animation:pulse 2s infinite; }
@@ -53,8 +59,8 @@
   /* TABS */
   .tabs { background:var(--card-bg); border-bottom:1px solid var(--warm); display:flex; overflow-x:auto; padding:0 20px; gap:2px; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,.06); }
   .tab { padding:13px 16px; font-size:13px; font-weight:500; color:var(--light-text); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:all .2s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
-  .tab:hover { color:var(--terracotta); }
-  .tab.active { color:var(--terracotta); border-bottom-color:var(--terracotta); }
+  .tab:hover { color:var(--accent); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
 
   /* MAIN */
   .main { max-width:960px; margin:0 auto; padding:28px 16px; }
@@ -62,11 +68,11 @@
   .panel.active { display:block; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   .section-title { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:18px; }
-  .section-title span { color:var(--terracotta); }
+  .section-title span { color:var(--accent); }
 
   /* ADD BUTTON */
-  .add-btn { display:inline-flex; align-items:center; gap:6px; background:var(--terracotta); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; margin-bottom:18px; }
-  .add-btn:hover { background:#b05530; transform:translateY(-1px); }
+  .add-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; margin-bottom:18px; }
+  .add-btn:hover { background:var(--accent-dark); transform:translateY(-1px); }
 
   /* MODAL */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(26,21,16,.6); z-index:500; align-items:center; justify-content:center; padding:16px; }
@@ -76,16 +82,16 @@
   .form-row { margin-bottom:14px; }
   .form-row label { display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); margin-bottom:5px; }
   .form-row input, .form-row textarea, .form-row select { width:100%; background:var(--sand); border:1px solid var(--warm); border-radius:8px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--deep); outline:none; transition:border-color .2s; }
-  .form-row input:focus, .form-row textarea:focus, .form-row select:focus { border-color:var(--terracotta); }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus { border-color:var(--accent); }
   .form-row textarea { resize:vertical; min-height:70px; }
   .form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
   .btn-cancel { background:var(--warm); border:none; border-radius:8px; padding:9px 18px; font-size:13px; cursor:pointer; font-family:inherit; color:var(--deep); }
-  .btn-save { background:var(--terracotta); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-  .btn-save:hover { background:#b05530; }
+  .btn-save { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-save:hover { background:var(--accent-dark); }
 
   /* CALENDAR */
   .month-block { margin-bottom:36px; }
-  .month-header { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--deep); padding:8px 0 12px; border-bottom:2px solid var(--terracotta); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+  .month-header { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--deep); padding:8px 0 12px; border-bottom:2px solid var(--butter); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
   .month-header span { font-size:11px; font-family:'DM Sans',sans-serif; color:var(--light-text); letter-spacing:1px; text-transform:uppercase; }
   .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:3px; }
   .cal-weekday { text-align:center; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); padding:4px 0; font-weight:600; }
@@ -93,11 +99,11 @@
   .cal-cell { min-height:72px; background:var(--card-bg); border:1px solid var(--warm); border-radius:8px; padding:6px; position:relative; transition:all .2s; cursor:default; }
   .cal-cell.empty { background:transparent; border-color:transparent; }
   .cal-cell.has-data { cursor:pointer; }
-  .cal-cell.has-data:hover { border-color:var(--terracotta); box-shadow:0 3px 12px rgba(0,0,0,.1); transform:translateY(-1px); }
-  .cal-cell.today { border-color:var(--gold); background:#fffbf2; }
+  .cal-cell.has-data:hover { border-color:var(--accent-light); box-shadow:0 3px 12px rgba(90,125,98,.12); transform:translateY(-1px); }
+  .cal-cell.today { border-color:var(--accent-light); background:var(--accent-light); }
   .cal-num { font-size:12px; font-weight:600; color:var(--light-text); margin-bottom:3px; }
   .cal-cell.has-data .cal-num { color:var(--deep); }
-  .cal-loc { font-size:10px; font-weight:600; color:var(--terracotta); line-height:1.2; margin-bottom:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .cal-loc { font-size:10px; font-weight:600; color:var(--accent); line-height:1.2; margin-bottom:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   .cal-dot-row { display:flex; gap:2px; flex-wrap:wrap; margin-top:3px; }
   .cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
   .cal-dot.transport { background:var(--moss); }
@@ -105,7 +111,7 @@
   .cal-dot.accom { background:var(--ocean); }
   .tag { font-size:11px; border-radius:4px; padding:2px 7px; display:inline-block; margin:2px 2px 0 0; }
   .tag-transport { color:var(--moss); background:rgba(106,171,126,.12); }
-  .tag-food { color:#9a5a2a; background:rgba(212,130,154,.1); }
+  .tag-food { color:#7a5a00; background:rgba(200,168,0,.12); }
   .tag-accom { color:var(--ocean); background:rgba(91,158,207,.1); }
   .icon-btn { background:none; border:none; cursor:pointer; font-size:12px; padding:2px 3px; border-radius:4px; transition:background .15s; color:var(--light-text); line-height:1; }
   .icon-btn:hover { background:var(--warm); color:var(--deep); }
@@ -121,7 +127,7 @@
   .drawer-item-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--light-text); margin-bottom:2px; }
   .drawer-actions { display:flex; gap:8px; margin-top:14px; }
   .drawer-btn { background:var(--warm); border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
-  .drawer-btn.primary { background:var(--terracotta); color:#fff; }
+  .drawer-btn.primary { background:var(--accent); color:#fff; }
   .drawer-btn:hover { opacity:.85; }
 
   /* OVERVIEW */
@@ -130,7 +136,7 @@
   .dest-info { flex:1; }
   .dest-name { font-weight:600; font-size:15px; }
   .dest-dates { font-size:12px; color:var(--light-text); margin-top:1px; }
-  .dest-nights { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--terracotta); text-align:right; }
+  .dest-nights { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--accent); text-align:right; }
   .dest-nights-label { font-size:10px; color:var(--light-text); text-transform:uppercase; letter-spacing:1px; }
 
   /* BUDGET */
@@ -140,13 +146,13 @@
   .budget-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); margin-bottom:5px; }
   .budget-card.highlight .budget-label { color:rgba(255,255,255,.45); }
   .budget-val { font-family:'Playfair Display',serif; font-size:1.4rem; }
-  .budget-card.highlight .budget-val { color:var(--gold); }
+  .budget-card.highlight .budget-val { color:var(--butter); }
   .budget-progress { margin-top:8px; background:var(--warm); border-radius:4px; height:4px; overflow:hidden; }
   .budget-bar { height:100%; border-radius:4px; transition:width .6s; }
   .month-budget-block { background:var(--card-bg); border:1px solid var(--warm); border-radius:12px; margin-bottom:10px; overflow:hidden; }
   .month-budget-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--warm); cursor:pointer; user-select:none; }
   .month-budget-header-left { font-weight:600; font-size:14px; }
-  .month-budget-header-right { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--terracotta); }
+  .month-budget-header-right { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--accent); }
   .month-budget-body { padding:14px 16px; display:none; }
   .month-budget-body.open { display:block; }
   .budget-cat-row { display:grid; grid-template-columns:1fr 110px 110px; gap:10px; align-items:center; padding:7px 0; border-bottom:1px solid var(--warm); }
@@ -154,18 +160,28 @@
   .budget-cat-row.header { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--light-text); font-weight:600; padding-bottom:8px; }
   .budget-cat-name { font-size:13px; display:flex; align-items:center; gap:7px; }
   .budget-cat-input { background:var(--sand); border:1px solid var(--warm); border-radius:6px; padding:5px 9px; font-size:13px; font-family:inherit; text-align:right; width:100%; transition:border-color .2s; }
-  .budget-cat-input:focus { outline:none; border-color:var(--terracotta); }
+  .budget-cat-input:focus { outline:none; border-color:var(--accent); }
   .budget-cat-total { font-size:13px; font-weight:600; text-align:right; color:var(--deep); }
   .budget-month-bar { height:3px; background:var(--warm); border-radius:2px; margin-top:3px; overflow:hidden; }
   .budget-month-bar-fill { height:100%; border-radius:2px; transition:width .5s; }
   .month-budget-footer { display:grid; grid-template-columns:1fr 110px 110px; gap:10px; padding:10px 0 2px; border-top:2px solid var(--warm); margin-top:4px; font-weight:700; font-size:13px; }
   .month-budget-footer .total-label { color:var(--deep); }
-  .month-budget-footer .total-val { text-align:right; color:var(--terracotta); font-family:'Playfair Display',serif; font-size:1rem; }
+  .month-budget-footer .total-val { text-align:right; color:var(--accent); font-family:'Playfair Display',serif; font-size:1rem; }
 
   /* CHECKLIST */
-  .checklist-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:9px; margin-bottom:20px; }
+  .checklist-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:9px; margin-bottom:12px; }
+  .cl-list-block { margin-bottom:28px; }
+  .cl-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--accent-light); }
+  .cl-list-name { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--deep); display:flex; align-items:center; gap:10px; }
+  .cl-list-name input { font-family:'Playfair Display',serif; font-size:1.1rem; border:none; background:transparent; color:var(--deep); outline:none; border-bottom:1px dashed var(--accent); width:200px; }
+  .cl-list-progress { font-size:11px; color:var(--light-text); letter-spacing:1px; }
+  .cl-list-actions { display:flex; gap:8px; align-items:center; }
+  .cl-add-item-btn { background:none; border:1px solid var(--accent); color:var(--accent); border-radius:6px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
+  .cl-add-item-btn:hover { background:var(--accent); color:#fff; }
+  .cl-delete-list-btn { background:none; border:none; color:var(--light-text); cursor:pointer; font-size:13px; padding:4px 6px; border-radius:4px; transition:all .2s; }
+  .cl-delete-list-btn:hover { color:var(--danger); background:rgba(176,80,64,.08); }
   .check-item { display:flex; align-items:center; gap:11px; background:var(--card-bg); border:1px solid var(--warm); border-radius:10px; padding:11px 14px; cursor:pointer; transition:all .2s; }
-  .check-item:hover { border-color:var(--terracotta); }
+  .check-item:hover { border-color:var(--accent-light); }
   .check-item.done { opacity:.5; }
   .check-item.done .check-text { text-decoration:line-through; }
   .check-box { width:22px; height:22px; border:2px solid var(--warm); border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .2s; }
@@ -176,10 +192,10 @@
 
   /* BUCKET LIST */
   .bucket-section { margin-bottom:22px; }
-  .bucket-location { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--terracotta); font-weight:600; padding-bottom:5px; border-bottom:1px solid var(--warm); margin-bottom:10px; }
+  .bucket-location { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); font-weight:600; padding-bottom:5px; border-bottom:1px solid var(--warm); margin-bottom:10px; }
   .bucket-items { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:7px; }
   .bucket-item { background:var(--card-bg); border:1px solid var(--warm); border-radius:8px; padding:9px 13px; font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:all .2s; user-select:none; }
-  .bucket-item:hover { border-color:var(--terracotta); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .bucket-item:hover { border-color:var(--accent-light); box-shadow:0 2px 8px rgba(90,125,98,.08); }
   .bucket-item.done { opacity:.5; }
   .bucket-item.done .bucket-item-name { text-decoration:line-through; }
   .bucket-check { width:20px; height:20px; border:2px solid var(--warm); border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .2s; }
@@ -188,9 +204,40 @@
   .bucket-item .del { background:none; border:none; cursor:pointer; font-size:13px; color:var(--light-text); opacity:0; transition:opacity .2s; flex-shrink:0; padding:0 2px; }
   .bucket-item:hover .del { opacity:1; }
 
-  /* LOADING */
+  /* PHOTOS */
+  .photo-section { margin-top:14px; border-top:1px solid var(--warm); padding-top:12px; }
+  .photo-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--light-text); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+  .photo-upload-btn { display:inline-flex; align-items:center; gap:5px; background:var(--accent-light); color:var(--accent-dark); border:1px dashed var(--accent); border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
+  .photo-upload-btn:hover { background:var(--accent); color:#fff; }
+  .photo-thumb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:6px; margin-top:8px; }
+  .photo-thumb { position:relative; aspect-ratio:1; border-radius:6px; overflow:hidden; cursor:pointer; }
+  .photo-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity .2s; }
+  .photo-thumb:hover img { opacity:.85; }
+  .photo-thumb-del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,.55); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; display:none; align-items:center; justify-content:center; line-height:1; }
+  .photo-thumb:hover .photo-thumb-del { display:flex; }
+  .photo-empty { font-size:12px; color:var(--light-text); font-style:italic; }
+
+  /* LIGHTBOX */
+  .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:900; align-items:center; justify-content:center; padding:20px; }
+  .lightbox.open { display:flex; }
+  .lightbox img { max-width:90vw; max-height:85vh; border-radius:10px; object-fit:contain; }
+  .lightbox-close { position:absolute; top:16px; right:20px; background:none; border:none; color:#fff; font-size:28px; cursor:pointer; line-height:1; opacity:.7; }
+  .lightbox-close:hover { opacity:1; }
+  .lightbox-caption { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.7); font-size:13px; white-space:nowrap; }
+
+  /* PHOTO TAB */
+  .photo-panel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
+  .photo-day-card { background:var(--card-bg); border:1px solid var(--warm); border-radius:10px; overflow:hidden; }
+  .photo-day-card-header { padding:8px 12px; font-size:12px; font-weight:600; color:var(--deep); border-bottom:1px solid var(--warm); display:flex; align-items:center; justify-content:space-between; }
+  .photo-day-card-loc { font-size:10px; color:var(--light-text); }
+  .photo-day-mini { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+  .photo-day-mini-cell { aspect-ratio:1; overflow:hidden; cursor:pointer; }
+  .photo-day-mini-cell img { width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-day-more { aspect-ratio:1; background:var(--warm); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--light-text); }
+  .download-all-btn { display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 20px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; margin-bottom:20px; }
+  .download-all-btn:hover { background:var(--accent-dark); }
   .loading { text-align:center; padding:40px; color:var(--light-text); font-size:14px; }
-  .spinner { width:28px; height:28px; border:3px solid var(--warm); border-top-color:var(--terracotta); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px; }
+  .spinner { width:28px; height:28px; border:3px solid var(--warm); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px; }
   @keyframes spin { to{transform:rotate(360deg)} }
 
   /* TOAST */
@@ -205,7 +252,7 @@
   .leaflet-popup-content-wrapper { border-radius:12px !important; box-shadow:0 4px 20px rgba(0,0,0,.15) !important; border:1px solid var(--warm) !important; }
   .leaflet-popup-content { margin:12px 16px !important; font-family:'DM Sans',sans-serif !important; }
   .popup-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--deep); margin-bottom:6px; }
-  .popup-dates { font-size:11px; color:var(--terracotta); font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }
+  .popup-dates { font-size:11px; color:var(--accent); font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }
   .popup-row { font-size:12px; color:var(--light-text); margin-bottom:3px; }
   .popup-row strong { color:var(--deep); }
 
@@ -215,9 +262,73 @@
 <body>
 
 <div class="hero">
+  <div class="hero-doodles">
+    <!-- Palm leaf top-left -->
+    <svg style="position:absolute;top:-10px;left:-10px;width:160px;height:160px;opacity:0.15;" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 140 Q50 80 120 20" stroke="#f0dfa0" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M30 140 Q55 75 130 30" stroke="#f0dfa0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+      <path d="M120 20 Q90 45 70 90" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M120 20 Q100 50 90 100" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M120 20 Q80 35 55 75" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M120 20 Q95 30 75 55" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+      <path d="M120 20 Q110 50 100 80" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    </svg>
+    <!-- Hibiscus flower top-right -->
+    <svg style="position:absolute;top:10px;right:60px;width:70px;height:70px;opacity:0.2;transform:rotate(15deg);" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="35" cy="18" rx="8" ry="14" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <ellipse cx="35" cy="52" rx="8" ry="14" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <ellipse cx="18" cy="35" rx="14" ry="8" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <ellipse cx="52" cy="35" rx="14" ry="8" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <ellipse cx="21" cy="21" rx="8" ry="14" stroke="#f0dfa0" stroke-width="2" fill="none" transform="rotate(45 21 21)"/>
+      <ellipse cx="49" cy="49" rx="8" ry="14" stroke="#f0dfa0" stroke-width="2" fill="none" transform="rotate(45 49 49)"/>
+      <circle cx="35" cy="35" r="6" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <line x1="35" y1="35" x2="35" y2="22" stroke="#f0dfa0" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <!-- Surfboard right side -->
+    <svg style="position:absolute;top:15px;right:10px;width:45px;height:120px;opacity:0.18;transform:rotate(20deg);" viewBox="0 0 45 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 5 Q38 30 38 70 Q38 100 22 115 Q6 100 6 70 Q6 30 22 5Z" stroke="#f0dfa0" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+      <path d="M22 5 Q22 60 22 115" stroke="#f0dfa0" stroke-width="1" fill="none" stroke-dasharray="4 4" opacity="0.5"/>
+      <ellipse cx="22" cy="80" rx="8" ry="5" stroke="#a8c8a0" stroke-width="1.5" fill="none"/>
+    </svg>
+    <!-- Wave bottom-right -->
+    <svg style="position:absolute;bottom:8px;right:80px;width:140px;height:50px;opacity:0.2;" viewBox="0 0 140 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 35 Q20 15 35 35 Q50 55 65 35 Q80 15 95 35 Q110 55 125 35" stroke="#a8c8a0" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M5 45 Q20 28 35 45 Q50 62 65 45 Q80 28 95 45 Q110 62 125 45" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    </svg>
+    <!-- Sun / starburst bottom-left area -->
+    <svg style="position:absolute;bottom:5px;left:200px;width:60px;height:60px;opacity:0.15;transform:rotate(10deg);" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="30" r="10" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <line x1="30" y1="4" x2="30" y2="14" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="30" y1="46" x2="30" y2="56" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="4" y1="30" x2="14" y2="30" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="46" y1="30" x2="56" y2="30" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="11" y1="11" x2="18" y2="18" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="42" y1="42" x2="49" y2="49" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="49" y1="11" x2="42" y2="18" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="18" y1="42" x2="11" y2="49" stroke="#f0dfa0" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <!-- Dotted flight path arc -->
+    <svg style="position:absolute;top:20px;left:180px;width:200px;height:80px;opacity:0.12;" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 70 Q100 5 190 70" stroke="#f0dfa0" stroke-width="1.5" stroke-dasharray="5 5" fill="none"/>
+      <polygon points="190,65 196,70 188,76" fill="#f0dfa0" opacity="0.7"/>
+    </svg>
+    <!-- Small tropical leaf cluster top-right corner -->
+    <svg style="position:absolute;top:-5px;right:0px;width:100px;height:100px;opacity:0.16;transform:rotate(-20deg);" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 10 Q40 30 20 80" stroke="#a8c8a0" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M80 10 Q60 20 55 50" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M80 10 Q70 35 50 60" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M80 10 Q85 40 75 65" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M80 10 Q95 25 90 55" stroke="#a8c8a0" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+    </svg>
+    <!-- Little coconut / circle accent -->
+    <svg style="position:absolute;bottom:12px;left:60px;width:30px;height:30px;opacity:0.18;" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="15" cy="18" r="10" stroke="#f0dfa0" stroke-width="2" fill="none"/>
+      <path d="M15 8 Q10 2 5 4" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M15 8 Q18 1 24 4" stroke="#a8c8a0" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </svg>
+  </div>
   <div class="hero-inner">
     <div>
-
       <h1><em>Travel</em> Planning</h1>
     </div>
     <div class="stats-row">
@@ -227,19 +338,15 @@
   </div>
 </div>
 
-<div class="sync-bar">
-  <span class="sync-dot"></span>
-  <span id="sync-status">Connected to Google Sheets</span>
-  <button onclick="syncFromSheet()">🔄 Sync Now</button>
-  <button onclick="resetToDefaults()" style="background:rgba(255,255,255,.1)">🗑 Reset Data</button>
-</div>
+
 
 <div class="tabs">
   <button class="tab active" onclick="showTab('overview',this)">🌍 Overview</button>
   <button class="tab" onclick="showTab('itinerary',this)">📅 Itinerary</button>
   <button class="tab" onclick="showTab('map',this)">🗺️ Map</button>
   <button class="tab" onclick="showTab('budget',this)">💷 Budget</button>
-  <button class="tab" onclick="showTab('checklist',this)">☑️ Checklist</button>
+  <button class="tab" onclick="showTab('photos',this)">📷 Photos</button>
+  <button class="tab" onclick="showTab('checklist',this)">☑️ Things to remember</button>
   <button class="tab" onclick="showTab('bucket',this)">📍 Bucket List</button>
 </div>
 
@@ -277,11 +384,22 @@
     <button class="add-btn" style="margin-top:8px" onclick="saveBudget()">💾 Save Budget</button>
   </div>
 
+  <!-- PHOTOS -->
+  <div class="panel" id="panel-photos">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div class="section-title" style="margin-bottom:0">Trip <span>Photos</span></div>
+      <button class="download-all-btn" onclick="downloadAllPhotos()">⬇ Download All</button>
+    </div>
+    <div id="photos-panel-container"><p style="color:var(--light-text);font-size:14px">No photos yet — open a day in the Itinerary tab and tap 📷 to add some!</p></div>
+  </div>
+
   <!-- CHECKLIST -->
   <div class="panel" id="panel-checklist">
-    <div class="section-title">Pre-Trip <span>Checklist</span></div>
-    <div class="checklist-grid" id="checklist-container"></div>
-    <button class="add-btn" onclick="openAddCheck()">+ Add Item</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div class="section-title" style="margin-bottom:0">Things to <span>Remember</span></div>
+      <button class="add-btn" onclick="openAddList()">+ New List</button>
+    </div>
+    <div id="checklist-container"></div>
   </div>
 
   <!-- BUCKET LIST -->
@@ -315,10 +433,22 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-new-list">
+  <div class="modal">
+    <h3>New List</h3>
+    <div class="form-row"><label>List Name</label><input type="text" id="f-list-name" placeholder="e.g. Packing, Things to Book…"></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-new-list')">Cancel</button>
+      <button class="btn-save" onclick="saveNewList()">Create List</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-check">
   <div class="modal">
-    <h3>Add Checklist Item</h3>
+    <h3>Add Item</h3>
     <div class="form-row"><label>Item</label><input type="text" id="f-check-text" placeholder="e.g. Book travel insurance"></div>
+    <input type="hidden" id="f-check-list-id">
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeModal('modal-check')">Cancel</button>
       <button class="btn-save" onclick="saveCheck()">Add</button>
@@ -345,6 +475,12 @@
       <button class="btn-save" onclick="saveBucketItem()">Add</button>
     </div>
   </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-caption" id="lightbox-caption"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -429,18 +565,22 @@ const DEFAULT_STATE = {
     {date:'2026-10-09',day:'Fri',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
   ],
   checklist: [
-    {text:'Renew passport',done:false},
-    {text:'Renew driving licence',done:false},
-    {text:'International driving permit',done:false},
-    {text:'Book rabies jabs',done:false},
-    {text:'All other jabs',done:false},
-    {text:'Travel insurance',done:false},
-    {text:'Packing cubes',done:false},
-    {text:'Book Lombok flight',done:false},
-    {text:'Notify bank of travel',done:false},
-    {text:'Download offline maps',done:false},
-    {text:'Emergency contacts doc',done:false},
-    {text:'Check passport expiry',done:false},
+    { id: 'list-1', name: 'Pre-Trip Admin', items: [
+      {text:'Renew passport',done:false},
+      {text:'Renew driving licence',done:false},
+      {text:'International driving permit',done:false},
+      {text:'Book rabies jabs',done:false},
+      {text:'All other jabs',done:false},
+      {text:'Travel insurance',done:false},
+      {text:'Notify bank of travel',done:false},
+      {text:'Check passport expiry',done:false},
+    ]},
+    { id: 'list-2', name: 'Packing', items: [
+      {text:'Packing cubes',done:false},
+      {text:'Download offline maps',done:false},
+      {text:'Emergency contacts doc',done:false},
+      {text:'Book Lombok flight',done:false},
+    ]},
   ],
   bucket: [
     {dest:'Canggu',type:'🍽️',name:'Gigi Susu',notes:'Bakery'},
@@ -464,11 +604,11 @@ function mergeWithDefaults(saved) {
   if (newDays.length) {
     saved.days = [...saved.days, ...newDays].sort((a,b) => a.date.localeCompare(b.date));
   }
-  // Ensure checklist has all default items
-  const savedChecks = new Set(saved.checklist.map(c => c.text));
-  DEFAULT_STATE.checklist.forEach(c => {
-    if (!savedChecks.has(c.text)) saved.checklist.push(c);
-  });
+  // Migrate old flat checklist to new multi-list format
+  if (saved.checklist && saved.checklist.length && !saved.checklist[0].items) {
+    saved.checklist = [{ id: 'list-1', name: 'Pre-Trip Admin', items: saved.checklist }];
+  }
+  if (!saved.checklist) saved.checklist = JSON.parse(JSON.stringify(DEFAULT_STATE.checklist));
   return saved;
 }
 
@@ -695,7 +835,6 @@ function renderItinerary() {
 }
 
 function openDrawer(drawerId, idx) {
-  // Close any open drawer
   if (activeDrawer && activeDrawer !== drawerId) closeDrawer(activeDrawer);
   const drawer = document.getElementById(drawerId);
   const d = state.days[idx];
@@ -711,13 +850,23 @@ function openDrawer(drawerId, idx) {
       ${d.budget ? `<div class="drawer-item"><div class="drawer-item-label">💷 Budget</div>£${d.budget}</div>` : ''}
       ${d.notes ? `<div class="drawer-item" style="grid-column:1/-1"><div class="drawer-item-label">📝 Notes</div><em>${d.notes}</em></div>` : ''}
     </div>
+    <div class="photo-section">
+      <div class="photo-section-label">
+        <span>📷 Photos</span>
+        <label class="photo-upload-btn">
+          + Add Photos
+          <input type="file" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event,'${d.date}','${drawerId}',${idx})">
+        </label>
+      </div>
+      <div class="photo-thumb-grid" id="photo-grid-${d.date}"></div>
+    </div>
     <div class="drawer-actions">
       <button class="drawer-btn primary" onclick="editDay(${idx});closeDrawer('${drawerId}')">✏️ Edit</button>
       <button class="drawer-btn" onclick="deleteDay(${idx})">🗑 Delete</button>
     </div>`;
   drawer.classList.add('open');
   activeDrawer = drawerId;
-  // Scroll drawer into view
+  renderDayPhotos(d.date);
   setTimeout(() => drawer.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
 }
 
@@ -969,33 +1118,87 @@ function saveBudget() {
 // ─────────────────────────────────────────────
 // CHECKLIST
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// CHECKLISTS (multi-list)
+// ─────────────────────────────────────────────
 function renderChecklist() {
   const container = document.getElementById('checklist-container');
-  container.innerHTML = state.checklist.map((item, i) => `
-    <div class="check-item ${item.done?'done':''}" onclick="toggleCheck(${i})">
-      <div class="check-box">${item.done?'✓':''}</div>
-      <div class="check-text">${item.text}</div>
-      <button class="check-delete" onclick="deleteCheck(event,${i})">✕</button>
-    </div>`).join('');
+  if (!state.checklist.length) {
+    container.innerHTML = '<p style="color:var(--light-text);font-size:14px">No lists yet — create your first list above!</p>';
+    return;
+  }
+  container.innerHTML = state.checklist.map((list, li) => {
+    const done = list.items.filter(x => x.done).length;
+    const total = list.items.length;
+    return `
+    <div class="cl-list-block">
+      <div class="cl-list-header">
+        <div class="cl-list-name">
+          <input value="${list.name}" onchange="renameList(${li}, this.value)" title="Click to rename">
+          <span class="cl-list-progress">${done}/${total}</span>
+        </div>
+        <div class="cl-list-actions">
+          <button class="cl-add-item-btn" onclick="openAddCheck(${li})">+ Add Item</button>
+          <button class="cl-delete-list-btn" onclick="deleteList(${li})" title="Delete list">✕</button>
+        </div>
+      </div>
+      <div class="checklist-grid">
+        ${list.items.map((item, ii) => `
+          <div class="check-item ${item.done?'done':''}" onclick="toggleCheck(${li},${ii})">
+            <div class="check-box">${item.done?'✓':''}</div>
+            <div class="check-text">${item.text}</div>
+            <button class="check-delete" onclick="deleteCheck(event,${li},${ii})">✕</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
-function toggleCheck(i) {
-  state.checklist[i].done = !state.checklist[i].done;
+
+function toggleCheck(li, ii) {
+  state.checklist[li].items[ii].done = !state.checklist[li].items[ii].done;
   saveState(); renderChecklist();
 }
-function deleteCheck(e, i) {
+function deleteCheck(e, li, ii) {
   e.stopPropagation();
-  state.checklist.splice(i, 1);
+  state.checklist[li].items.splice(ii, 1);
   saveState(); renderChecklist();
   toast('Removed');
 }
-function openAddCheck() { document.getElementById('f-check-text').value=''; document.getElementById('modal-check').classList.add('open'); }
+function renameList(li, name) {
+  state.checklist[li].name = name;
+  saveState();
+}
+function deleteList(li) {
+  if (!confirm(`Delete the "${state.checklist[li].name}" list?`)) return;
+  state.checklist.splice(li, 1);
+  saveState(); renderChecklist();
+  toast('List removed');
+}
+function openAddList() {
+  document.getElementById('f-list-name').value = '';
+  document.getElementById('modal-new-list').classList.add('open');
+}
+function saveNewList() {
+  const name = document.getElementById('f-list-name').value.trim();
+  if (!name) return;
+  state.checklist.push({ id: 'list-' + Date.now(), name, items: [] });
+  saveState(); renderChecklist();
+  closeModal('modal-new-list');
+  toast('✅ New list created!');
+}
+function openAddCheck(li) {
+  document.getElementById('f-check-text').value = '';
+  document.getElementById('f-check-list-id').value = li;
+  document.getElementById('modal-check').classList.add('open');
+}
 function saveCheck() {
   const t = document.getElementById('f-check-text').value.trim();
+  const li = parseInt(document.getElementById('f-check-list-id').value);
   if (!t) return;
-  state.checklist.push({text:t,done:false});
+  state.checklist[li].items.push({text:t, done:false});
   saveState(); renderChecklist();
   closeModal('modal-check');
-  toast('✅ Added to checklist!');
+  toast('✅ Added!');
 }
 
 // ─────────────────────────────────────────────
@@ -1063,8 +1266,141 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 });
 
 // ─────────────────────────────────────────────
-// RENDER ALL
+// PHOTOS
 // ─────────────────────────────────────────────
+const PHOTO_KEY_PREFIX = 'travel-photos-';
+
+function getPhotoKey(date) { return PHOTO_KEY_PREFIX + date; }
+
+function loadPhotos(date) {
+  try { return JSON.parse(localStorage.getItem(getPhotoKey(date)) || '[]'); } catch { return []; }
+}
+
+function savePhotos(date, photos) {
+  try { localStorage.setItem(getPhotoKey(date), JSON.stringify(photos)); } catch(e) {
+    toast('⚠️ Storage full — try removing some photos');
+  }
+}
+
+function handlePhotoUpload(event, date, drawerId, idx) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  const existing = loadPhotos(date);
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      existing.push({ dataUrl: e.target.result, name: file.name, date });
+      loaded++;
+      if (loaded === files.length) {
+        savePhotos(date, existing);
+        renderDayPhotos(date);
+        renderPhotosPanel();
+        toast(`📷 ${files.length} photo${files.length>1?'s':''} added!`);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderDayPhotos(date) {
+  const grid = document.getElementById('photo-grid-' + date);
+  if (!grid) return;
+  const photos = loadPhotos(date);
+  if (!photos.length) {
+    grid.innerHTML = '<div class="photo-empty">No photos yet</div>';
+    return;
+  }
+  grid.innerHTML = photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.dataUrl}" alt="${p.name}" onclick="openLightbox('${date}',${i})">
+      <button class="photo-thumb-del" onclick="deletePhoto(event,'${date}',${i})" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function deletePhoto(e, date, i) {
+  e.stopPropagation();
+  const photos = loadPhotos(date);
+  photos.splice(i, 1);
+  savePhotos(date, photos);
+  renderDayPhotos(date);
+  renderPhotosPanel();
+  toast('Photo removed');
+}
+
+function openLightbox(date, i) {
+  const photos = loadPhotos(date);
+  const p = photos[i];
+  if (!p) return;
+  document.getElementById('lightbox-img').src = p.dataUrl;
+  document.getElementById('lightbox-caption').textContent = p.name + ' · ' + formatDate(date);
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+function renderPhotosPanel() {
+  const container = document.getElementById('photos-panel-container');
+  if (!container) return;
+  const daysWithPhotos = state.days.filter(d => loadPhotos(d.date).length > 0)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  if (!daysWithPhotos.length) {
+    container.innerHTML = '<p style="color:var(--light-text);font-size:14px">No photos yet — open a day in the Itinerary tab and tap 📷 to add some!</p>';
+    return;
+  }
+  const totalPhotos = daysWithPhotos.reduce((s,d) => s + loadPhotos(d.date).length, 0);
+  container.innerHTML = `
+    <p style="font-size:13px;color:var(--light-text);margin-bottom:16px">${totalPhotos} photo${totalPhotos!==1?'s':''} across ${daysWithPhotos.length} day${daysWithPhotos.length!==1?'s':''}</p>
+    <div class="photo-panel-grid">
+      ${daysWithPhotos.map(d => {
+        const photos = loadPhotos(d.date);
+        const preview = photos.slice(0,6);
+        const extra = photos.length - 6;
+        return `<div class="photo-day-card">
+          <div class="photo-day-card-header">
+            <div>
+              <div>${formatDate(d.date)}</div>
+              <div class="photo-day-card-loc">${locFlag(d.loc)} ${d.loc.split('→').pop().trim()} · ${photos.length} photo${photos.length!==1?'s':''}</div>
+            </div>
+          </div>
+          <div class="photo-day-mini">
+            ${preview.map((p,i) => `
+              <div class="photo-day-mini-cell" onclick="openLightbox('${d.date}',${i})">
+                <img src="${p.dataUrl}" alt="${p.name}">
+              </div>`).join('')}
+            ${extra > 0 ? `<div class="photo-day-more">+${extra}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function downloadAllPhotos() {
+  const daysWithPhotos = state.days.filter(d => loadPhotos(d.date).length > 0);
+  if (!daysWithPhotos.length) { toast('No photos to download yet!'); return; }
+  toast('⏳ Preparing zip…');
+  const zip = new JSZip();
+  daysWithPhotos.forEach(d => {
+    const photos = loadPhotos(d.date);
+    const folderName = d.date + ' - ' + d.loc.replace(/[^a-zA-Z0-9 \-]/g,'').trim().substring(0,30);
+    const folder = zip.folder(folderName);
+    photos.forEach((p, i) => {
+      const ext = p.name.split('.').pop() || 'jpg';
+      const base64 = p.dataUrl.split(',')[1];
+      folder.file(`${String(i+1).padStart(2,'0')}_${p.name}`, base64, {base64:true});
+    });
+  });
+  const blob = await zip.generateAsync({type:'blob'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'trip-photos.zip'; a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Downloaded!');
+}
+
+
 function renderAll() {
   updateCountdown();
   renderOverview();
@@ -1146,9 +1482,9 @@ function getCoords(locStr) {
 
 function getMonthColor(dateStr) {
   const colors = [
-    '#d4829a','#5b9ecf','#6aab7e','#e8c84a',
-    '#b07ec8','#e8894a','#4ab8c8','#c8a84a',
-    '#7e9ecf','#c86a7e','#7ec8a0','#9a8ad4','#d4a87e'
+    '#5a7d62','#6a8e72','#7a9e82','#8aae92',
+    '#4a6d52','#5a7d62','#3a5d42','#6a8e72',
+    '#7a9e82','#4a6d52','#8aae92','#3a5d42','#6a8e72'
   ];
   if (!dateStr) return colors[0];
   const d = new Date(dateStr + 'T00:00:00');
@@ -1196,7 +1532,7 @@ function renderMap() {
   // Draw dotted route line
   if (pins.length > 1) {
     L.polyline(pins.map(p => p.coords), {
-      color: '#d4829a',
+      color: '#5a7d62',
       weight: 2,
       dashArray: '6 8',
       opacity: 0.6
@@ -1265,12 +1601,14 @@ function renderMap() {
   ).join('');
 }
 
-// Override showTab to init map when map tab is opened
+// Override showTab to init map and photos when tabs are opened
 const _origShowTab = showTab;
 showTab = function(id, btn) {
   _origShowTab(id, btn);
   if (id === 'map') setTimeout(renderMap, 50);
+  if (id === 'photos') renderPhotosPanel();
 };
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
 </html>
