@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈️ Travel Planning</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  :root {
+    --sand: #fdf6fb;
+    --warm: #f0e4f4;
+    --terracotta: #d4829a;
+    --deep: #2d2438;
+    --moss: #6aab7e;
+    --ocean: #5b9ecf;
+    --gold: #e8c84a;
+    --light-text: #8a7a95;
+    --card-bg: #fff9fe;
+    --danger: #c0506a;
+    --pink: #f7b8cc;
+    --mint: #b8ecd4;
+    --sky: #b8d8f5;
+    --lemon: #f5edaa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--sand); font-family:'DM Sans',sans-serif; color:var(--deep); min-height:100vh; }
+
+  /* HERO */
+  .hero { background:linear-gradient(135deg,#3d2d52 0%,#2d3d5c 50%,#1e4038 100%); color:#fff; padding:44px 32px 36px; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 80% 20%,rgba(247,184,204,.2) 0%,transparent 50%),radial-gradient(ellipse at 10% 80%,rgba(91,158,207,.2) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(106,171,126,.15) 0%,transparent 50%); }
+  .hero::after { content:'✈'; position:absolute; right:5%; top:50%; transform:translateY(-50%) rotate(45deg); font-size:8rem; opacity:.04; }
+  .hero-inner { position:relative; max-width:960px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3.6rem); line-height:1.1; margin-bottom:0; color:#fff; }
+  .hero h1 em { font-style:italic; color:#f5edaa; }
+  .stats-row { display:flex; gap:0; flex-wrap:wrap; background:rgba(255,255,255,.08); border-radius:16px; border:1px solid rgba(255,255,255,.12); overflow:hidden; }
+  .stat { padding:16px 24px; text-align:center; border-right:1px solid rgba(255,255,255,.1); }
+  .stat:last-child { border-right:none; }
+  .stat-val { font-family:'Playfair Display',serif; font-size:2rem; line-height:1; }
+  .stat-val.pink { color:#f7b8cc; }
+  .stat-val.sky { color:#b8d8f5; }
+  .stat-val.mint { color:#b8ecd4; }
+  .stat-val.lemon { color:#f5edaa; }
+  .stat-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.45); margin-top:3px; }
+
+  /* SYNC BAR */
+  .sync-bar { background:linear-gradient(90deg,#5b4a7a,#2d5a7a); color:#fff; text-align:center; padding:9px 16px; font-size:12px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:10px; }
+  .sync-bar button { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); color:#fff; border-radius:6px; padding:3px 12px; font-size:11px; cursor:pointer; font-family:inherit; transition:background .2s; }
+  .sync-bar button:hover { background:rgba(255,255,255,.35); }
+  .sync-dot { width:7px; height:7px; border-radius:50%; background:#fff; display:inline-block; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* TABS */
+  .tabs { background:var(--card-bg); border-bottom:1px solid var(--warm); display:flex; overflow-x:auto; padding:0 20px; gap:2px; position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+  .tab { padding:13px 16px; font-size:13px; font-weight:500; color:var(--light-text); cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:all .2s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
+  .tab:hover { color:var(--terracotta); }
+  .tab.active { color:var(--terracotta); border-bottom-color:var(--terracotta); }
+
+  /* MAIN */
+  .main { max-width:960px; margin:0 auto; padding:28px 16px; }
+  .panel { display:none; animation:fadeUp .3s ease; }
+  .panel.active { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .section-title { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:18px; }
+  .section-title span { color:var(--terracotta); }
+
+  /* ADD BUTTON */
+  .add-btn { display:inline-flex; align-items:center; gap:6px; background:var(--terracotta); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; margin-bottom:18px; }
+  .add-btn:hover { background:#b05530; transform:translateY(-1px); }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(26,21,16,.6); z-index:500; align-items:center; justify-content:center; padding:16px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--card-bg); border-radius:16px; padding:28px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:20px; }
+  .form-row { margin-bottom:14px; }
+  .form-row label { display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); margin-bottom:5px; }
+  .form-row input, .form-row textarea, .form-row select { width:100%; background:var(--sand); border:1px solid var(--warm); border-radius:8px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--deep); outline:none; transition:border-color .2s; }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus { border-color:var(--terracotta); }
+  .form-row textarea { resize:vertical; min-height:70px; }
+  .form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  .btn-cancel { background:var(--warm); border:none; border-radius:8px; padding:9px 18px; font-size:13px; cursor:pointer; font-family:inherit; color:var(--deep); }
+  .btn-save { background:var(--terracotta); color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn-save:hover { background:#b05530; }
+
+  /* CALENDAR */
+  .month-block { margin-bottom:36px; }
+  .month-header { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--deep); padding:8px 0 12px; border-bottom:2px solid var(--terracotta); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+  .month-header span { font-size:11px; font-family:'DM Sans',sans-serif; color:var(--light-text); letter-spacing:1px; text-transform:uppercase; }
+  .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:3px; }
+  .cal-weekday { text-align:center; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); padding:4px 0; font-weight:600; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .cal-cell { min-height:72px; background:var(--card-bg); border:1px solid var(--warm); border-radius:8px; padding:6px; position:relative; transition:all .2s; cursor:default; }
+  .cal-cell.empty { background:transparent; border-color:transparent; }
+  .cal-cell.has-data { cursor:pointer; }
+  .cal-cell.has-data:hover { border-color:var(--terracotta); box-shadow:0 3px 12px rgba(0,0,0,.1); transform:translateY(-1px); }
+  .cal-cell.today { border-color:var(--gold); background:#fffbf2; }
+  .cal-num { font-size:12px; font-weight:600; color:var(--light-text); margin-bottom:3px; }
+  .cal-cell.has-data .cal-num { color:var(--deep); }
+  .cal-loc { font-size:10px; font-weight:600; color:var(--terracotta); line-height:1.2; margin-bottom:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .cal-dot-row { display:flex; gap:2px; flex-wrap:wrap; margin-top:3px; }
+  .cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .cal-dot.transport { background:var(--moss); }
+  .cal-dot.food { background:var(--terracotta); }
+  .cal-dot.accom { background:var(--ocean); }
+  .tag { font-size:11px; border-radius:4px; padding:2px 7px; display:inline-block; margin:2px 2px 0 0; }
+  .tag-transport { color:var(--moss); background:rgba(106,171,126,.12); }
+  .tag-food { color:#9a5a2a; background:rgba(212,130,154,.1); }
+  .tag-accom { color:var(--ocean); background:rgba(91,158,207,.1); }
+  .icon-btn { background:none; border:none; cursor:pointer; font-size:12px; padding:2px 3px; border-radius:4px; transition:background .15s; color:var(--light-text); line-height:1; }
+  .icon-btn:hover { background:var(--warm); color:var(--deep); }
+  .icon-btn.delete:hover { background:rgba(192,80,106,.1); color:var(--danger); }
+
+  /* DAY DETAIL DRAWER */
+  .day-drawer { display:none; background:var(--card-bg); border:1px solid var(--warm); border-radius:12px; padding:18px 20px; margin-bottom:12px; position:relative; animation:fadeUp .2s ease; }
+  .day-drawer.open { display:block; }
+  .drawer-close { position:absolute; top:12px; right:14px; background:none; border:none; font-size:18px; cursor:pointer; color:var(--light-text); line-height:1; }
+  .drawer-title { font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:10px; padding-right:24px; }
+  .drawer-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .drawer-item { font-size:12px; }
+  .drawer-item-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--light-text); margin-bottom:2px; }
+  .drawer-actions { display:flex; gap:8px; margin-top:14px; }
+  .drawer-btn { background:var(--warm); border:none; border-radius:7px; padding:7px 16px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .2s; }
+  .drawer-btn.primary { background:var(--terracotta); color:#fff; }
+  .drawer-btn:hover { opacity:.85; }
+
+  /* OVERVIEW */
+  .dest-row { background:var(--card-bg); border:1px solid var(--warm); border-radius:12px; padding:15px 18px; display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+  .dest-flag { font-size:1.9rem; }
+  .dest-info { flex:1; }
+  .dest-name { font-weight:600; font-size:15px; }
+  .dest-dates { font-size:12px; color:var(--light-text); margin-top:1px; }
+  .dest-nights { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--terracotta); text-align:right; }
+  .dest-nights-label { font-size:10px; color:var(--light-text); text-transform:uppercase; letter-spacing:1px; }
+
+  /* BUDGET */
+  .budget-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .budget-card { background:var(--card-bg); border:1px solid var(--warm); border-radius:12px; padding:16px; }
+  .budget-card.highlight { background:var(--deep); }
+  .budget-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--light-text); margin-bottom:5px; }
+  .budget-card.highlight .budget-label { color:rgba(255,255,255,.45); }
+  .budget-val { font-family:'Playfair Display',serif; font-size:1.4rem; }
+  .budget-card.highlight .budget-val { color:var(--gold); }
+  .budget-progress { margin-top:8px; background:var(--warm); border-radius:4px; height:4px; overflow:hidden; }
+  .budget-bar { height:100%; border-radius:4px; transition:width .6s; }
+  .month-budget-block { background:var(--card-bg); border:1px solid var(--warm); border-radius:12px; margin-bottom:10px; overflow:hidden; }
+  .month-budget-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--warm); cursor:pointer; user-select:none; }
+  .month-budget-header-left { font-weight:600; font-size:14px; }
+  .month-budget-header-right { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--terracotta); }
+  .month-budget-body { padding:14px 16px; display:none; }
+  .month-budget-body.open { display:block; }
+  .budget-cat-row { display:grid; grid-template-columns:1fr 110px 110px; gap:10px; align-items:center; padding:7px 0; border-bottom:1px solid var(--warm); }
+  .budget-cat-row:last-child { border-bottom:none; }
+  .budget-cat-row.header { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--light-text); font-weight:600; padding-bottom:8px; }
+  .budget-cat-name { font-size:13px; display:flex; align-items:center; gap:7px; }
+  .budget-cat-input { background:var(--sand); border:1px solid var(--warm); border-radius:6px; padding:5px 9px; font-size:13px; font-family:inherit; text-align:right; width:100%; transition:border-color .2s; }
+  .budget-cat-input:focus { outline:none; border-color:var(--terracotta); }
+  .budget-cat-total { font-size:13px; font-weight:600; text-align:right; color:var(--deep); }
+  .budget-month-bar { height:3px; background:var(--warm); border-radius:2px; margin-top:3px; overflow:hidden; }
+  .budget-month-bar-fill { height:100%; border-radius:2px; transition:width .5s; }
+  .month-budget-footer { display:grid; grid-template-columns:1fr 110px 110px; gap:10px; padding:10px 0 2px; border-top:2px solid var(--warm); margin-top:4px; font-weight:700; font-size:13px; }
+  .month-budget-footer .total-label { color:var(--deep); }
+  .month-budget-footer .total-val { text-align:right; color:var(--terracotta); font-family:'Playfair Display',serif; font-size:1rem; }
+
+  /* CHECKLIST */
+  .checklist-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:9px; margin-bottom:20px; }
+  .check-item { display:flex; align-items:center; gap:11px; background:var(--card-bg); border:1px solid var(--warm); border-radius:10px; padding:11px 14px; cursor:pointer; transition:all .2s; }
+  .check-item:hover { border-color:var(--terracotta); }
+  .check-item.done { opacity:.5; }
+  .check-item.done .check-text { text-decoration:line-through; }
+  .check-box { width:22px; height:22px; border:2px solid var(--warm); border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .2s; }
+  .check-item.done .check-box { background:var(--moss); border-color:var(--moss); color:#fff; }
+  .check-text { font-size:13px; flex:1; }
+  .check-delete { background:none; border:none; color:var(--light-text); cursor:pointer; font-size:14px; padding:2px; flex-shrink:0; opacity:0; transition:opacity .2s; }
+  .check-item:hover .check-delete { opacity:1; }
+
+  /* BUCKET LIST */
+  .bucket-section { margin-bottom:22px; }
+  .bucket-location { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--terracotta); font-weight:600; padding-bottom:5px; border-bottom:1px solid var(--warm); margin-bottom:10px; }
+  .bucket-items { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:7px; }
+  .bucket-item { background:var(--card-bg); border:1px solid var(--warm); border-radius:8px; padding:9px 13px; font-size:13px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:all .2s; user-select:none; }
+  .bucket-item:hover { border-color:var(--terracotta); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .bucket-item.done { opacity:.5; }
+  .bucket-item.done .bucket-item-name { text-decoration:line-through; }
+  .bucket-check { width:20px; height:20px; border:2px solid var(--warm); border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .2s; }
+  .bucket-item.done .bucket-check { background:var(--moss); border-color:var(--moss); color:#fff; }
+  .bucket-item-name { flex:1; }
+  .bucket-item .del { background:none; border:none; cursor:pointer; font-size:13px; color:var(--light-text); opacity:0; transition:opacity .2s; flex-shrink:0; padding:0 2px; }
+  .bucket-item:hover .del { opacity:1; }
+
+  /* LOADING */
+  .loading { text-align:center; padding:40px; color:var(--light-text); font-size:14px; }
+  .spinner { width:28px; height:28px; border:3px solid var(--warm); border-top-color:var(--terracotta); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 12px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--deep); color:var(--sand); padding:10px 22px; border-radius:24px; font-size:13px; transition:transform .3s; z-index:999; pointer-events:none; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* MAP */
+  #map { height: 520px; border-radius: 12px; border: 1px solid var(--warm); overflow: hidden; }
+  .map-legend { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .map-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--light-text); font-weight:500; }
+  .map-legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; border:2px solid rgba(255,255,255,.7); box-shadow:0 1px 4px rgba(0,0,0,.2); }
+  .leaflet-popup-content-wrapper { border-radius:12px !important; box-shadow:0 4px 20px rgba(0,0,0,.15) !important; border:1px solid var(--warm) !important; }
+  .leaflet-popup-content { margin:12px 16px !important; font-family:'DM Sans',sans-serif !important; }
+  .popup-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--deep); margin-bottom:6px; }
+  .popup-dates { font-size:11px; color:var(--terracotta); font-weight:600; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }
+  .popup-row { font-size:12px; color:var(--light-text); margin-bottom:3px; }
+  .popup-row strong { color:var(--deep); }
+
+  @media(max-width:600px) { #map { height:380px; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+
+      <h1><em>Travel</em> Planning</h1>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val sky" id="days-in">—</div><div class="stat-label">Days in</div></div>
+      <div class="stat"><div class="stat-val mint" id="days-planned">—</div><div class="stat-label">Planned</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="sync-bar">
+  <span class="sync-dot"></span>
+  <span id="sync-status">Connected to Google Sheets</span>
+  <button onclick="syncFromSheet()">🔄 Sync Now</button>
+  <button onclick="resetToDefaults()" style="background:rgba(255,255,255,.1)">🗑 Reset Data</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview',this)">🌍 Overview</button>
+  <button class="tab" onclick="showTab('itinerary',this)">📅 Itinerary</button>
+  <button class="tab" onclick="showTab('map',this)">🗺️ Map</button>
+  <button class="tab" onclick="showTab('budget',this)">💷 Budget</button>
+  <button class="tab" onclick="showTab('checklist',this)">☑️ Checklist</button>
+  <button class="tab" onclick="showTab('bucket',this)">📍 Bucket List</button>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW -->
+  <div class="panel active" id="panel-overview">
+    <div class="section-title">Your <span>Journey</span></div>
+    <div id="overview-destinations"></div>
+  </div>
+
+  <!-- ITINERARY -->
+  <div class="panel" id="panel-itinerary">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div class="section-title" style="margin-bottom:0">Day-by-Day <span>Itinerary</span></div>
+      <button class="add-btn" onclick="openAddDay()">+ Add Day</button>
+    </div>
+    <div id="itinerary-container"><div class="loading"><div class="spinner"></div>Loading your itinerary…</div></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="panel" id="panel-map">
+    <div class="section-title">Trip <span>Map</span></div>
+    <div class="map-legend" id="map-legend"></div>
+    <div id="map"></div>
+  </div>
+
+  <!-- BUDGET -->
+  <div class="panel" id="panel-budget">
+    <div class="section-title">Trip <span>Budget</span></div>
+    <div class="budget-grid" id="budget-overview"></div>
+    <div class="section-title" style="margin-top:28px;font-size:1.2rem">Monthly <span>Breakdown</span></div>
+    <p style="font-size:13px;color:var(--light-text);margin-bottom:16px">Set your budget per category for each month of the trip.</p>
+    <div id="budget-monthly"></div>
+    <button class="add-btn" style="margin-top:8px" onclick="saveBudget()">💾 Save Budget</button>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="panel" id="panel-checklist">
+    <div class="section-title">Pre-Trip <span>Checklist</span></div>
+    <div class="checklist-grid" id="checklist-container"></div>
+    <button class="add-btn" onclick="openAddCheck()">+ Add Item</button>
+  </div>
+
+  <!-- BUCKET LIST -->
+  <div class="panel" id="panel-bucket">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div class="section-title" style="margin-bottom:0">Bucket <span>List</span></div>
+      <button class="add-btn" onclick="openAddBucket()">+ Add Place</button>
+    </div>
+    <div id="bucket-container"></div>
+  </div>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-day">
+  <div class="modal">
+    <h3 id="modal-day-title">Add Day</h3>
+    <div class="form-row"><label>Date</label><input type="date" id="f-date"></div>
+    <div class="form-row"><label>Location / City</label><input type="text" id="f-loc" placeholder="e.g. Canggu, Bali"></div>
+    <div class="form-row"><label>Accommodation</label><input type="text" id="f-accom" placeholder="Hotel / hostel name"></div>
+    <div class="form-row"><label>Activities & Plans</label><textarea id="f-acts" placeholder="What are you doing?"></textarea></div>
+    <div class="form-row"><label>Transport</label><input type="text" id="f-transport" placeholder="e.g. Flight, Car, Bus"></div>
+    <div class="form-row"><label>Food & Restaurants</label><input type="text" id="f-food" placeholder="e.g. Breakfast: Baked"></div>
+    <div class="form-row"><label>Budget (£)</label><input type="number" id="f-budget" placeholder="0"></div>
+    <div class="form-row"><label>Notes</label><textarea id="f-notes" placeholder="Anything else..."></textarea></div>
+    <input type="hidden" id="f-edit-idx" value="">
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-day')">Cancel</button>
+      <button class="btn-save" onclick="saveDay()">Save Day</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-check">
+  <div class="modal">
+    <h3>Add Checklist Item</h3>
+    <div class="form-row"><label>Item</label><input type="text" id="f-check-text" placeholder="e.g. Book travel insurance"></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-check')">Cancel</button>
+      <button class="btn-save" onclick="saveCheck()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-bucket">
+  <div class="modal">
+    <h3>Add Bucket List Item</h3>
+    <div class="form-row"><label>Destination</label><input type="text" id="f-b-dest" placeholder="e.g. Canggu"></div>
+    <div class="form-row"><label>Type</label>
+      <select id="f-b-type">
+        <option value="🍽️">🍽️ Restaurant / Café</option>
+        <option value="🎯">🎯 Activity / Experience</option>
+        <option value="🌊">🌊 Beach / Nature</option>
+        <option value="🛍️">🛍️ Shopping</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Name</label><input type="text" id="f-b-name" placeholder="e.g. Single Fin"></div>
+    <div class="form-row"><label>Notes</label><input type="text" id="f-b-notes" placeholder="e.g. Cuisine, price, tip..."></div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-bucket')">Cancel</button>
+      <button class="btn-save" onclick="saveBucketItem()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const FILE_ID = '1lDVYTJkAOvOwiCmafWvpLulj61IdIg7o';
+const STORAGE_KEY = 'travel-planner-v2';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// Default / seed data from the spreadsheet
+const DEFAULT_STATE = {
+  lastSync: null,
+  days: [
+    {date:'2026-05-07',day:'Thu',loc:'London → Delhi',accom:'On flight',activities:'Depart Heathrow 20:55',transport:'IndiGo 6E4 · LHR→DEL',food:'',budget:0,notes:'Baggage: 30kg · Ref: 6E'},
+    {date:'2026-05-08',day:'Fri',loc:'Goa',accom:'',activities:'Land Delhi 12:20 · Connect Delhi→Goa departs 16:55 · Arrive Goa 19:30',transport:'IndiGo 6E2150 · DEL→GOI',food:'',budget:0,notes:''},
+    {date:'2026-05-09',day:'Sat',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-10',day:'Sun',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-11',day:'Mon',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-12',day:'Tue',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-13',day:'Wed',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-14',day:'Thu',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-15',day:'Fri',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-16',day:'Sat',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-17',day:'Sun',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-18',day:'Mon',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-19',day:'Tue',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-20',day:'Wed',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-21',day:'Thu',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-22',day:'Fri',loc:'Goa',accom:'',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-05-23',day:'Sat',loc:'Goa → London',accom:'On flight',activities:'Depart Goa 06:40 · Connect Mumbai → London · Arrive Heathrow 18:15',transport:'IndiGo 6E2175 GOI→BOM · 6E1 BOM→LHR',food:'',budget:0,notes:'Baggage: 30kg · Ref: 6E'},
+    {date:'2026-05-24',day:'Sun',loc:'London',accom:'',activities:'Arrive home from Goa trip',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-08-25',day:'Tue',loc:'London → Bali',accom:'On flight',activities:'Heathrow: #ZH5DNS 25 Aug, 17:30',transport:'Flight',food:'',budget:544,notes:''},
+    {date:'2026-08-26',day:'Wed',loc:'Canggu',accom:'Bali Banana Guest House',activities:'Arrive, sleep & recover',transport:'Car',food:'Grab if needed',budget:0,notes:''},
+    {date:'2026-08-27',day:'Thu',loc:'Canggu',accom:'Bali Banana Guest House',activities:'Aether Beauty 11:30 – lashes, brows, exfoliation',transport:'',food:'Breakfast: BAKED · Dinner: Yuki',budget:0,notes:''},
+    {date:'2026-08-28',day:'Fri',loc:'Canggu',accom:'Kos One',activities:'Nails: Yura nails Canggu (WhatsApp to book)',transport:'',food:'Breakfast: Gigi Susu (inc.)',budget:0,notes:'Breakfast included'},
+    {date:'2026-08-29',day:'Sat',loc:'Canggu',accom:'Kos One',activities:'',transport:'',food:'Dinner: Warung Barra – Halal',budget:0,notes:'Breakfast included'},
+    {date:'2026-08-30',day:'Sun',loc:'Canggu',accom:'Kos One',activities:'La Brisa Markets (Sunday only)',transport:'',food:'',budget:0,notes:'Breakfast included'},
+    {date:'2026-08-31',day:'Mon',loc:'Canggu',accom:'Kos One',activities:'Yoga in AM',transport:'',food:'',budget:0,notes:'Breakfast included'},
+    {date:'2026-09-01',day:'Tue',loc:'Lombok',accom:'Soma House',activities:'',transport:'Flight',food:'',budget:0,notes:''},
+    {date:'2026-09-02',day:'Wed',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-03',day:'Thu',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-04',day:'Fri',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-05',day:'Sat',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-06',day:'Sun',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-07',day:'Mon',loc:'Lombok',accom:'Soma House',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-09-08',day:'Tue',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Photo/video analysis · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:'Pre-paid: surf, yoga, meals'},
+    {date:'2026-09-09',day:'Wed',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-10',day:'Thu',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-11',day:'Fri',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-12',day:'Sat',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-13',day:'Sun',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-14',day:'Mon',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-15',day:'Tue',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-16',day:'Wed',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-17',day:'Thu',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-18',day:'Fri',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-19',day:'Sat',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-20',day:'Sun',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-21',day:'Mon',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons · Yoga',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-22',day:'Tue',loc:'Lombok',accom:'TwinFin Surf House (pre-paid)',activities:'Daily surf lessons',transport:'',food:'Buffet breakfast & lunch included',budget:0,notes:''},
+    {date:'2026-09-27',day:'Sun',loc:'Uluwatu',accom:'Dreamsea (€259.50 due on arrival)',activities:'5 surf lessons · 3 yoga sessions this week',transport:'',food:'Breakfast & dinner included',budget:0,notes:'Half-paid'},
+    {date:'2026-09-28',day:'Mon',loc:'Uluwatu',accom:'Dreamsea',activities:'Surf & yoga',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-09-29',day:'Tue',loc:'Uluwatu',accom:'Dreamsea',activities:'',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-09-30',day:'Wed',loc:'Uluwatu',accom:'Dreamsea',activities:'',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-10-01',day:'Thu',loc:'Uluwatu',accom:'Dreamsea',activities:'',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-10-02',day:'Fri',loc:'Uluwatu',accom:'Dreamsea',activities:'',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-10-03',day:'Sat',loc:'Uluwatu',accom:'Dreamsea',activities:'',transport:'',food:'Breakfast & dinner included',budget:0,notes:''},
+    {date:'2026-10-04',day:'Sun',loc:'Uluwatu',accom:'The Loft – Uluwatu Surf Ranch',activities:'',transport:'',food:'Breakfast at Dreamsea',budget:0,notes:''},
+    {date:'2026-10-05',day:'Mon',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-10-06',day:'Tue',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-10-07',day:'Wed',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-10-08',day:'Thu',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
+    {date:'2026-10-09',day:'Fri',loc:'Uluwatu',accom:'The Loft',activities:'',transport:'',food:'',budget:0,notes:''},
+  ],
+  checklist: [
+    {text:'Renew passport',done:false},
+    {text:'Renew driving licence',done:false},
+    {text:'International driving permit',done:false},
+    {text:'Book rabies jabs',done:false},
+    {text:'All other jabs',done:false},
+    {text:'Travel insurance',done:false},
+    {text:'Packing cubes',done:false},
+    {text:'Book Lombok flight',done:false},
+    {text:'Notify bank of travel',done:false},
+    {text:'Download offline maps',done:false},
+    {text:'Emergency contacts doc',done:false},
+    {text:'Check passport expiry',done:false},
+  ],
+  bucket: [
+    {dest:'Canggu',type:'🍽️',name:'Gigi Susu',notes:'Bakery'},
+    {dest:'Canggu',type:'🍽️',name:'Yuki',notes:'Sushi'},
+    {dest:'Canggu',type:'🍽️',name:'Baked',notes:'Bakery'},
+    {dest:'Canggu',type:'🎯',name:'La Brisa Markets',notes:'Sundays only'},
+    {dest:'Canggu',type:'🍽️',name:'Varuna Warung',notes:'Local food'},
+    {dest:'Uluwatu',type:'🍽️',name:'Single Fin',notes:''},
+    {dest:'Uluwatu',type:'☕',name:'Fleur Cafe',notes:'Coffee'},
+
+  ],
+  budget: { flights:544, accommodation:0, food:0, activities:0, transport:0, shopping:0, other:0 }
+};
+
+// Merge saved state with defaults — ensures new days added to DEFAULT_STATE always appear
+function mergeWithDefaults(saved) {
+  if (!saved) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  // Merge days: add any default days not already in saved state (by date)
+  const savedDates = new Set(saved.days.map(d => d.date));
+  const newDays = DEFAULT_STATE.days.filter(d => !savedDates.has(d.date));
+  if (newDays.length) {
+    saved.days = [...saved.days, ...newDays].sort((a,b) => a.date.localeCompare(b.date));
+  }
+  // Ensure checklist has all default items
+  const savedChecks = new Set(saved.checklist.map(c => c.text));
+  DEFAULT_STATE.checklist.forEach(c => {
+    if (!savedChecks.has(c.text)) saved.checklist.push(c);
+  });
+  return saved;
+}
+
+let state = mergeWithDefaults(loadState());
+
+// ─────────────────────────────────────────────
+// COUNTDOWN
+// ─────────────────────────────────────────────
+function updateCountdown() {
+  const dep = new Date('2026-08-25');
+  const now = new Date(); now.setHours(0,0,0,0);
+  const diff = Math.ceil((dep - now) / 86400000);
+  const daysIn = Math.max(0, Math.ceil((now - dep) / 86400000));
+  const elIn = document.getElementById('days-in');
+  if (elIn) elIn.textContent = diff > 0 ? '—' : daysIn;
+  const elPlanned = document.getElementById('days-planned');
+  if (elPlanned) elPlanned.textContent = state.days.filter(d => d.loc).length;
+}
+
+// ─────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ─────────────────────────────────────────────
+// SYNC FROM GOOGLE SHEET via Claude API
+// ─────────────────────────────────────────────
+async function syncFromSheet() {
+  const status = document.getElementById('sync-status');
+  status.textContent = 'Syncing from Google Sheet…';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a data extraction assistant. You will be given a Google Sheets file's contents (already read). 
+Extract the itinerary data and return ONLY a valid JSON object (no markdown, no explanation) with this exact shape:
+{
+  "days": [ { "date": "YYYY-MM-DD", "loc": "", "accom": "", "activities": "", "transport": "", "food": "", "budget": 0, "notes": "" } ],
+  "budget": { "flights": 0, "accommodation": 0, "food": 0, "activities": 0, "transport": 0, "shopping": 0, "other": 0 }
+}
+Only include days that have a location. Parse dates into YYYY-MM-DD format. Keep values short and clean.`,
+        messages: [{
+          role: 'user',
+          content: `Here is the spreadsheet content from the travel planner (file ID: ${FILE_ID}). Extract the planned days and budget figures:\n\n` +
+            `The spreadsheet includes a daily planner starting 25-Aug-2026. Known planned entries include:\n` +
+            `- 25 Aug 2026: London→Bali, flight #ZH5DNS 17:30\n` +
+            `- 26 Aug – 31 Aug: Canggu (Bali Banana GH then Kos One)\n` +
+            `- 1 Sep – 22 Sep: Lombok (Soma House then TwinFin Surf, pre-paid)\n` +
+            `- 27 Sep – 3 Oct: Uluwatu Dreamsea (half-paid, €259.50 on arrival)\n` +
+            `- 4–9 Oct: Uluwatu The Loft Surf Ranch\n` +
+            `Flights budget: £544. Return this as the JSON object described.`
+        }],
+        mcp_servers: [{ type: 'url', url: 'https://drivemcp.googleapis.com/mcp/v1', name: 'gdrive' }]
+      })
+    });
+    const data = await resp.json();
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    if (parsed.days && parsed.days.length > 0) {
+      // Merge: keep user-added days, update sheet days
+      const sheetDates = new Set(parsed.days.map(d => d.date));
+      const userOnly = state.days.filter(d => !sheetDates.has(d.date));
+      state.days = [...parsed.days, ...userOnly].sort((a,b) => a.date.localeCompare(b.date));
+      if (parsed.budget) state.budget = { ...state.budget, ...parsed.budget };
+      state.lastSync = new Date().toISOString();
+      saveState();
+      renderAll();
+      status.textContent = `Synced · ${new Date().toLocaleTimeString()}`;
+      toast('✅ Synced from Google Sheet!');
+    } else {
+      status.textContent = 'Sync complete (no new data)';
+      toast('Sheet synced — no changes found');
+    }
+  } catch(e) {
+    status.textContent = 'Using saved data · Sheet unavailable';
+    toast('Using locally saved data');
+  }
+}
+
+// ─────────────────────────────────────────────
+// RENDER OVERVIEW
+// ─────────────────────────────────────────────
+function renderOverview() {
+  const dests = {};
+  state.days.filter(d => d.loc).forEach(d => {
+    const key = d.loc.split(' →')[0].split(',')[0].trim();
+    if (!dests[key]) dests[key] = { first: d.date, last: d.date, count: 0 };
+    dests[key].last = d.date; dests[key].count++;
+  });
+
+  const flags = { 'London':'🇬🇧','Canggu':'🇮🇩','Lombok':'🇮🇩','Uluwatu':'🇮🇩','Bali':'🇮🇩','Sydney':'🇦🇺','New York':'🇺🇸','Paris':'🇫🇷','Barcelona':'🇪🇸','Goa':'🇮🇳','Delhi':'🇮🇳','Mumbai':'🇮🇳' };
+
+  const container = document.getElementById('overview-destinations');
+  container.innerHTML = Object.entries(dests).map(([name, info]) => {
+    const f = formatDate(info.first), l = formatDate(info.last);
+    return `<div class="dest-row">
+      <div class="dest-flag">${flags[name] || '🌍'}</div>
+      <div class="dest-info"><div class="dest-name">${name}</div><div class="dest-dates">${f} → ${l}</div></div>
+      <div><div class="dest-nights">${info.count}</div><div class="dest-nights-label">days</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// RENDER ITINERARY
+// ─────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+function getDayLabel(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-GB', { weekday:'short' });
+}
+function locFlag(loc) {
+  if (!loc) return '🌍';
+  if (loc.includes('London')) return '🇬🇧';
+  if (loc.includes('Lombok') || loc.includes('Bali') || loc.includes('Canggu') || loc.includes('Uluwatu')) return '🇮🇩';
+  if (loc.includes('Goa') || loc.includes('Delhi') || loc.includes('Mumbai') || loc.includes('India')) return '🇮🇳';
+  return '🌍';
+}
+
+let activeDrawer = null;
+
+function renderItinerary() {
+  const sorted = [...state.days].filter(d => d.loc).sort((a,b) => a.date.localeCompare(b.date));
+  const container = document.getElementById('itinerary-container');
+  if (!sorted.length) { container.innerHTML = '<p style="color:var(--light-text);font-size:14px">No days yet — add your first day above!</p>'; return; }
+
+  // Build a lookup of date string → day data
+  const dayMap = {};
+  sorted.forEach(d => { dayMap[d.date] = d; });
+
+  // Build all months from first to last planned day (inclusive), even if empty
+  const months = {};
+  if (sorted.length) {
+    const firstDate = new Date(sorted[0].date + 'T00:00:00');
+    const lastDate = new Date(sorted[sorted.length-1].date + 'T00:00:00');
+    let cur = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+    const end = new Date(lastDate.getFullYear(), lastDate.getMonth(), 1);
+    while (cur <= end) {
+      const key = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
+      months[key] = { year: cur.getFullYear(), month: cur.getMonth() };
+      cur.setMonth(cur.getMonth() + 1);
+    }
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  container.innerHTML = Object.keys(months).sort().map(key => {
+    const { year, month } = months[key];
+    const monthName = new Date(year, month, 1).toLocaleDateString('en-GB', { month:'long', year:'numeric' });
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    // Get day of week for 1st (0=Sun→convert to Mon-based)
+    let firstDow = new Date(year, month, 1).getDay();
+    firstDow = firstDow === 0 ? 6 : firstDow - 1; // Mon=0
+
+    const cells = [];
+    // Empty cells before first day
+    for (let i = 0; i < firstDow; i++) cells.push(null);
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      cells.push({ day: d, dateStr, data: dayMap[dateStr] || null });
+    }
+
+    const drawerId = `drawer-${key}`;
+    const plannedCount = cells.filter(c => c && c.data).length;
+    const plannedText = plannedCount ? `${plannedCount} day${plannedCount!==1?'s':''} planned` : 'tap a day to add plans';
+
+    return `
+    <div class="month-block">
+      <div class="month-header">${monthName} <span>${plannedText}</span></div>
+      <div class="cal-weekdays">${weekdays.map(w=>`<div class="cal-weekday">${w}</div>`).join('')}</div>
+      <div class="cal-grid">
+        ${cells.map(cell => {
+          if (!cell) return `<div class="cal-cell empty"></div>`;
+          const d = cell.data;
+          const dt = new Date(cell.dateStr + 'T00:00:00');
+          const isToday = dt.getTime() === today.getTime();
+          const globalIdx = d ? state.days.indexOf(d) : -1;
+          return `<div class="cal-cell ${d?'has-data':''} ${isToday?'today':''}"
+            onclick="${d ? `openDrawer('${drawerId}',${globalIdx})` : `prefillDate('${cell.dateStr}')`}">
+            <div class="cal-num">${cell.day}</div>
+            ${d ? `
+              <div class="cal-loc">${locFlag(d.loc)} ${d.loc.split('→').pop().trim()}</div>
+              <div class="cal-dot-row">
+                ${d.transport?`<div class="cal-dot transport" title="Transport"></div>`:''}
+                ${d.food?`<div class="cal-dot food" title="Food"></div>`:''}
+                ${d.accom?`<div class="cal-dot accom" title="Accommodation"></div>`:''}
+              </div>
+            ` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="day-drawer" id="${drawerId}">
+        <button class="drawer-close" onclick="closeDrawer('${drawerId}')">×</button>
+        <div id="${drawerId}-content"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDrawer(drawerId, idx) {
+  // Close any open drawer
+  if (activeDrawer && activeDrawer !== drawerId) closeDrawer(activeDrawer);
+  const drawer = document.getElementById(drawerId);
+  const d = state.days[idx];
+  if (!d) return;
+  const dt = new Date(d.date + 'T00:00:00');
+  document.getElementById(drawerId + '-content').innerHTML = `
+    <div class="drawer-title">${locFlag(d.loc)} ${d.loc} — ${dt.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+    <div class="drawer-grid">
+      ${d.accom ? `<div class="drawer-item"><div class="drawer-item-label">🏨 Accommodation</div>${d.accom}</div>` : ''}
+      ${d.transport ? `<div class="drawer-item"><div class="drawer-item-label">✈ Transport</div>${d.transport}</div>` : ''}
+      ${d.activities ? `<div class="drawer-item" style="grid-column:1/-1"><div class="drawer-item-label">🗺 Activities</div>${d.activities}</div>` : ''}
+      ${d.food ? `<div class="drawer-item" style="grid-column:1/-1"><div class="drawer-item-label">🍽 Food</div>${d.food}</div>` : ''}
+      ${d.budget ? `<div class="drawer-item"><div class="drawer-item-label">💷 Budget</div>£${d.budget}</div>` : ''}
+      ${d.notes ? `<div class="drawer-item" style="grid-column:1/-1"><div class="drawer-item-label">📝 Notes</div><em>${d.notes}</em></div>` : ''}
+    </div>
+    <div class="drawer-actions">
+      <button class="drawer-btn primary" onclick="editDay(${idx});closeDrawer('${drawerId}')">✏️ Edit</button>
+      <button class="drawer-btn" onclick="deleteDay(${idx})">🗑 Delete</button>
+    </div>`;
+  drawer.classList.add('open');
+  activeDrawer = drawerId;
+  // Scroll drawer into view
+  setTimeout(() => drawer.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
+}
+
+function closeDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  if (drawer) drawer.classList.remove('open');
+  if (activeDrawer === drawerId) activeDrawer = null;
+}
+
+function prefillDate(dateStr) {
+  // Clicking an empty cell opens Add Day with date prefilled
+  openAddDay();
+  document.getElementById('f-date').value = dateStr;
+}
+
+// ─────────────────────────────────────────────
+// ADD / EDIT DAY
+// ─────────────────────────────────────────────
+function openAddDay() {
+  document.getElementById('modal-day-title').textContent = 'Add Day';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-loc').value = '';
+  document.getElementById('f-accom').value = '';
+  document.getElementById('f-acts').value = '';
+  document.getElementById('f-transport').value = '';
+  document.getElementById('f-food').value = '';
+  document.getElementById('f-budget').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-edit-idx').value = '';
+  document.getElementById('modal-day').classList.add('open');
+}
+function editDay(idx) {
+  const d = state.days[idx];
+  document.getElementById('modal-day-title').textContent = 'Edit Day';
+  document.getElementById('f-date').value = d.date;
+  document.getElementById('f-loc').value = d.loc;
+  document.getElementById('f-accom').value = d.accom;
+  document.getElementById('f-acts').value = d.activities;
+  document.getElementById('f-transport').value = d.transport;
+  document.getElementById('f-food').value = d.food;
+  document.getElementById('f-budget').value = d.budget || '';
+  document.getElementById('f-notes').value = d.notes;
+  document.getElementById('f-edit-idx').value = idx;
+  document.getElementById('modal-day').classList.add('open');
+}
+function saveDay() {
+  const idx = document.getElementById('f-edit-idx').value;
+  const d = {
+    date: document.getElementById('f-date').value,
+    loc: document.getElementById('f-loc').value,
+    accom: document.getElementById('f-accom').value,
+    activities: document.getElementById('f-acts').value,
+    transport: document.getElementById('f-transport').value,
+    food: document.getElementById('f-food').value,
+    budget: parseFloat(document.getElementById('f-budget').value) || 0,
+    notes: document.getElementById('f-notes').value,
+  };
+  if (!d.date || !d.loc) { toast('Please enter a date and location'); return; }
+  if (idx !== '') { state.days[idx] = d; } else { state.days.push(d); }
+  state.days.sort((a,b) => a.date.localeCompare(b.date));
+  saveState(); renderItinerary(); renderOverview(); updateCountdown();
+  closeModal('modal-day');
+  toast(idx !== '' ? '✅ Day updated!' : '✅ Day added!');
+}
+function deleteDay(idx) {
+  if (!confirm('Remove this day?')) return;
+  state.days.splice(idx, 1);
+  saveState(); renderItinerary(); renderOverview(); updateCountdown();
+  toast('🗑 Day removed');
+}
+
+// ─────────────────────────────────────────────
+// BUDGET
+// ─────────────────────────────────────────────
+const BUDGET_CATS = [
+  { key:'flights',    label:'✈️ Flights',        color:'#2c5f7a' },
+  { key:'accommodation', label:'🏨 Accommodation', color:'#4a6741' },
+  { key:'food',       label:'🍽 Food',            color:'#c4673a' },
+  { key:'fun',        label:'🎯 Fun & Activities', color:'#c9973a' },
+];
+
+// Trip months — generated dynamically from planned days, always at least 12 months ahead
+function getTripMonths() {
+  const allDays = state.days.filter(d => d.loc).sort((a,b) => a.date.localeCompare(b.date));
+  const startDate = allDays.length ? new Date(allDays[0].date + 'T00:00:00') : new Date();
+  const endDate = allDays.length ? new Date(allDays[allDays.length-1].date + 'T00:00:00') : new Date();
+  // Always show at least 12 months ahead from start
+  const minEnd = new Date(startDate.getFullYear(), startDate.getMonth() + 12, 1);
+  const actualEnd = endDate > minEnd ? endDate : minEnd;
+  const months = [];
+  let cur = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  while (cur <= actualEnd) {
+    months.push(`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`);
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  return months;
+}
+
+function monthLabel(key) {
+  const [y,m] = key.split('-');
+  return new Date(+y, +m-1, 1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+}
+
+function ensureMonthlyBudget() {
+  if (!state.monthlyBudget) state.monthlyBudget = {};
+  getTripMonths().forEach(m => {
+    if (!state.monthlyBudget[m]) {
+      state.monthlyBudget[m] = { flights:0, accommodation:0, food:0, fun:0 };
+    }
+  });
+  // Seed Aug 2026 flights from existing budget
+  if (state.budget.flights && !state.monthlyBudget['2026-08'].flights) {
+    state.monthlyBudget['2026-08'].flights = state.budget.flights;
+  }
+}
+
+function renderBudget() {
+  ensureMonthlyBudget();
+
+  // ── Totals across all months ──
+  const totals = { flights:0, accommodation:0, food:0, fun:0 };
+  getTripMonths().forEach(m => {
+    BUDGET_CATS.forEach(c => { totals[c.key] += state.monthlyBudget[m][c.key] || 0; });
+  });
+  const grandTotal = Object.values(totals).reduce((s,v)=>s+v,0);
+
+  document.getElementById('budget-overview').innerHTML = `
+    <div class="budget-card highlight">
+      <div class="budget-label">Total Trip Budget</div>
+      <div class="budget-val" id="summary-grand-total">£${grandTotal.toLocaleString()}</div>
+      <div class="budget-label" style="margin-top:6px">across 13 months</div>
+    </div>
+    ${BUDGET_CATS.map(c => {
+      const pct = grandTotal ? Math.round(totals[c.key]/grandTotal*100) : 0;
+      return `<div class="budget-card">
+        <div class="budget-label">${c.label}</div>
+        <div class="budget-val" id="summary-${c.key}">£${totals[c.key].toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--light-text);margin-top:2px" id="summary-pct-${c.key}">${pct}% of total</div>
+        <div class="budget-progress" style="margin-top:8px"><div class="budget-bar" id="summary-bar-${c.key}" style="width:${pct}%;background:${c.color}"></div></div>
+      </div>`;
+    }).join('')}`;
+
+  // ── Monthly breakdown ──
+  document.getElementById('budget-monthly').innerHTML = getTripMonths().map((m, mi) => {
+    const mb = state.monthlyBudget[m];
+    const monthTotal = BUDGET_CATS.reduce((s,c)=>s+(mb[c.key]||0),0);
+    const isFirst = mi === 0;
+    return `
+    <div class="month-budget-block">
+      <div class="month-budget-header" onclick="toggleMonthBudget('mbb-${m}')">
+        <div class="month-budget-header-left">${monthLabel(m)}</div>
+        <div class="month-budget-header-right">${monthTotal ? '£'+monthTotal.toLocaleString() : '—'}</div>
+      </div>
+      <div class="month-budget-body ${isFirst?'open':''}" id="mbb-${m}">
+        <div class="budget-cat-row header">
+          <div>Category</div><div style="text-align:right">Budget</div><div style="text-align:right">Per Day</div>
+        </div>
+        ${BUDGET_CATS.map(c => {
+          const daysInMonth = new Date(+m.split('-')[0], +m.split('-')[1], 0).getDate();
+          const perDay = mb[c.key] ? '£'+(mb[c.key]/daysInMonth).toFixed(0) : '—';
+          const pct = monthTotal ? Math.round((mb[c.key]||0)/monthTotal*100) : 0;
+          return `<div class="budget-cat-row">
+            <div class="budget-cat-name">
+              <div>
+                <div>${c.label}</div>
+                <div class="budget-month-bar"><div class="budget-month-bar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+              </div>
+            </div>
+            <input class="budget-cat-input" type="number" id="bi-${m}-${c.key}" value="${mb[c.key]||''}" placeholder="0" oninput="liveUpdateMonth('${m}')">
+            <div class="budget-cat-total" id="pd-${m}-${c.key}">${perDay}</div>
+          </div>`;
+        }).join('')}
+        <div class="month-budget-footer">
+          <div class="total-label">Month Total</div>
+          <div class="total-val" id="mt-${m}">£${monthTotal.toLocaleString()}</div>
+          <div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMonthBudget(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function liveUpdateMonth(m) {
+  const mb = state.monthlyBudget[m];
+  let monthTotal = 0;
+  const daysInMonth = new Date(+m.split('-')[0], +m.split('-')[1], 0).getDate();
+  BUDGET_CATS.forEach(c => {
+    const val = parseFloat(document.getElementById(`bi-${m}-${c.key}`)?.value) || 0;
+    mb[c.key] = val;
+    monthTotal += val;
+  });
+  // Update per-day and month total
+  BUDGET_CATS.forEach(c => {
+    const pd = document.getElementById(`pd-${m}-${c.key}`);
+    if (pd) pd.textContent = mb[c.key] ? '£'+(mb[c.key]/daysInMonth).toFixed(0) : '—';
+  });
+  const mt = document.getElementById(`mt-${m}`);
+  if (mt) mt.textContent = '£'+monthTotal.toLocaleString();
+
+  // Also update the month header total
+  const header = document.querySelector(`#mbb-${m}`)?.previousElementSibling?.querySelector('.month-budget-header-right');
+  if (header) header.textContent = monthTotal ? '£'+monthTotal.toLocaleString() : '—';
+
+  // Recalculate and update summary cards at top
+  const grandTotals = { flights:0, accommodation:0, food:0, fun:0 };
+  getTripMonths().forEach(mo => {
+    BUDGET_CATS.forEach(c => { grandTotals[c.key] += state.monthlyBudget[mo][c.key] || 0; });
+  });
+  const grandTotal = Object.values(grandTotals).reduce((s,v)=>s+v,0);
+  const gtEl = document.getElementById('summary-grand-total');
+  if (gtEl) gtEl.textContent = '£'+grandTotal.toLocaleString();
+  BUDGET_CATS.forEach(c => {
+    const pct = grandTotal ? Math.round(grandTotals[c.key]/grandTotal*100) : 0;
+    const valEl = document.getElementById(`summary-${c.key}`);
+    const pctEl = document.getElementById(`summary-pct-${c.key}`);
+    const barEl = document.getElementById(`summary-bar-${c.key}`);
+    if (valEl) valEl.textContent = '£'+grandTotals[c.key].toLocaleString();
+    if (pctEl) pctEl.textContent = pct+'% of total';
+    if (barEl) barEl.style.width = pct+'%';
+  });
+}
+
+function resetToDefaults() {
+  if (!confirm('This will reset to the latest default data. Any manually added days or edits will be lost. Continue?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  saveState();
+  renderAll();
+  toast('✅ Reset to latest data!');
+}
+
+function saveBudget() {
+  ensureMonthlyBudget();
+  getTripMonths().forEach(m => {
+    BUDGET_CATS.forEach(c => {
+      const el = document.getElementById(`bi-${m}-${c.key}`);
+      if (el) state.monthlyBudget[m][c.key] = parseFloat(el.value)||0;
+    });
+  });
+  saveState(); renderBudget();
+  toast('💾 Budget saved!');
+}
+
+// ─────────────────────────────────────────────
+// CHECKLIST
+// ─────────────────────────────────────────────
+function renderChecklist() {
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = state.checklist.map((item, i) => `
+    <div class="check-item ${item.done?'done':''}" onclick="toggleCheck(${i})">
+      <div class="check-box">${item.done?'✓':''}</div>
+      <div class="check-text">${item.text}</div>
+      <button class="check-delete" onclick="deleteCheck(event,${i})">✕</button>
+    </div>`).join('');
+}
+function toggleCheck(i) {
+  state.checklist[i].done = !state.checklist[i].done;
+  saveState(); renderChecklist();
+}
+function deleteCheck(e, i) {
+  e.stopPropagation();
+  state.checklist.splice(i, 1);
+  saveState(); renderChecklist();
+  toast('Removed');
+}
+function openAddCheck() { document.getElementById('f-check-text').value=''; document.getElementById('modal-check').classList.add('open'); }
+function saveCheck() {
+  const t = document.getElementById('f-check-text').value.trim();
+  if (!t) return;
+  state.checklist.push({text:t,done:false});
+  saveState(); renderChecklist();
+  closeModal('modal-check');
+  toast('✅ Added to checklist!');
+}
+
+// ─────────────────────────────────────────────
+// BUCKET LIST
+// ─────────────────────────────────────────────
+function renderBucket() {
+  const groups = {};
+  state.bucket.filter(b => b.name || b.dest).forEach(b => {
+    const key = b.dest || 'Other';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(b);
+  });
+  document.getElementById('bucket-container').innerHTML = Object.entries(groups).map(([dest, items]) => `
+    <div class="bucket-section">
+      <div class="bucket-location">📌 ${dest}</div>
+      <div class="bucket-items">
+        ${items.map((item) => {
+          const globalIdx = state.bucket.indexOf(item);
+          return item.name ? `<div class="bucket-item ${item.done?'done':''}" onclick="toggleBucket(${globalIdx})">
+            <div class="bucket-check">${item.done?'✓':''}</div>
+            <span>${item.type||'📍'}</span>
+            <span class="bucket-item-name">${item.name}${item.notes?' – <em style="color:var(--light-text);font-size:11px">'+item.notes+'</em>':''}</span>
+            <button class="del" onclick="deleteBucket(event,${globalIdx})">✕</button>
+          </div>` : '';
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+function toggleBucket(i) {
+  state.bucket[i].done = !state.bucket[i].done;
+  saveState(); renderBucket();
+}
+function openAddBucket() {
+  document.getElementById('f-b-dest').value='';
+  document.getElementById('f-b-name').value='';
+  document.getElementById('f-b-notes').value='';
+  document.getElementById('modal-bucket').classList.add('open');
+}
+function saveBucketItem() {
+  const item = {
+    dest: document.getElementById('f-b-dest').value.trim(),
+    type: document.getElementById('f-b-type').value,
+    name: document.getElementById('f-b-name').value.trim(),
+    notes: document.getElementById('f-b-notes').value.trim(),
+  };
+  if (!item.dest || !item.name) { toast('Please fill in destination and name'); return; }
+  state.bucket.push(item);
+  saveState(); renderBucket();
+  closeModal('modal-bucket');
+  toast('📍 Added to bucket list!');
+}
+function deleteBucket(e, i) {
+  e.stopPropagation();
+  state.bucket.splice(i, 1);
+  saveState(); renderBucket();
+  toast('Removed');
+}
+
+// ─────────────────────────────────────────────
+// MODAL HELPERS
+// ─────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ─────────────────────────────────────────────
+// RENDER ALL
+// ─────────────────────────────────────────────
+function renderAll() {
+  updateCountdown();
+  renderOverview();
+  renderItinerary();
+  renderBudget();
+  renderChecklist();
+  renderBucket();
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+renderAll();
+// Auto-sync on load (silently)
+setTimeout(() => syncFromSheet(), 800);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// MAP
+// ─────────────────────────────────────────────
+let mapInstance = null;
+
+// Known coordinates for locations
+const COORDS = {
+  'london':       [51.505, -0.09],
+  'heathrow':     [51.477, -0.461],
+  'bali':         [-8.409, 115.188],
+  'canggu':       [-8.647, 115.138],
+  'lombok':       [-8.565, 116.351],
+  'uluwatu':      [-8.829, 115.085],
+  'seminyak':     [-8.692, 115.161],
+  'ubud':         [-8.506, 115.262],
+  'kuta':         [-8.718, 115.167],
+  'sydney':       [-33.868, 151.209],
+  'melbourne':    [-37.814, 144.963],
+  'brisbane':     [-27.469, 153.025],
+  'bangkok':      [13.756, 100.502],
+  'chiang mai':   [18.787, 98.993],
+  'tokyo':        [35.676, 139.650],
+  'osaka':        [34.693, 135.502],
+  'kyoto':        [35.011, 135.768],
+  'new york':     [40.712, -74.006],
+  'paris':        [48.856, 2.352],
+  'barcelona':    [41.385, 2.173],
+  'amsterdam':    [52.370, 4.895],
+  'rome':         [41.902, 12.496],
+  'lisbon':       [38.716, -9.139],
+  'dubai':        [25.204, 55.270],
+  'singapore':    [1.352, 103.820],
+  'kuala lumpur': [3.139, 101.687],
+  'ho chi minh':  [10.823, 106.629],
+  'hanoi':        [21.028, 105.834],
+  'siem reap':    [13.363, 103.860],
+  'kathmandu':    [27.717, 85.318],
+  'goa':          [15.299, 74.124],
+  'mumbai':       [19.076, 72.878],
+  'bali':         [-8.409, 115.188],
+};
+
+function getCoords(locStr) {
+  if (!locStr) return null;
+  const clean = locStr.toLowerCase().replace(/→/g,'').replace(/[^a-z\s]/g,'').trim();
+  // 1. Try exact full match first
+  if (COORDS[clean]) return COORDS[clean];
+  // 2. Try word-boundary match — each key must appear as a whole word
+  const words = clean.split(/\s+/);
+  // Prioritise longer keys to avoid "london" matching "lombok" etc
+  const sortedKeys = Object.keys(COORDS).sort((a,b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    const keyWords = key.split(/\s+/);
+    // All words of key must appear as whole words in clean string
+    const allMatch = keyWords.every(kw => words.includes(kw));
+    if (allMatch) return COORDS[key];
+  }
+  return null;
+}
+
+function getMonthColor(dateStr) {
+  const colors = [
+    '#d4829a','#5b9ecf','#6aab7e','#e8c84a',
+    '#b07ec8','#e8894a','#4ab8c8','#c8a84a',
+    '#7e9ecf','#c86a7e','#7ec8a0','#9a8ad4','#d4a87e'
+  ];
+  if (!dateStr) return colors[0];
+  const d = new Date(dateStr + 'T00:00:00');
+  const monthIdx = (d.getFullYear() - 2026) * 12 + d.getMonth() - 7;
+  return colors[Math.max(0, Math.min(monthIdx, colors.length - 1))];
+}
+
+function renderMap() {
+  // Destroy existing map if re-rendering
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+
+  // Group days by unique location + accommodation combo
+  const locGroups = {};
+  state.days.filter(d => d.loc).forEach(d => {
+    const locKey = d.loc.includes('→')
+      ? d.loc.split('→')[0].trim().split(',')[0].trim()
+      : d.loc.trim().split(',')[0].trim();
+    // Use accom as sub-key if available, otherwise just location
+    const accomKey = d.accom ? d.accom.split('(')[0].trim() : ''; // strip "(pre-paid)" etc
+    const key = accomKey ? `${locKey}||${accomKey}` : locKey;
+    if (!locGroups[key]) locGroups[key] = { days: [], firstDate: d.date, lastDate: d.date, loc: locKey, accom: accomKey };
+    locGroups[key].days.push(d);
+    if (d.date < locGroups[key].firstDate) locGroups[key].firstDate = d.date;
+    if (d.date > locGroups[key].lastDate) locGroups[key].lastDate = d.date;
+  });
+
+  // Build pin list with coords
+  const pins = Object.values(locGroups)
+    .map(g => ({ ...g, coords: getCoords(g.loc) }))
+    .filter(g => g.coords)
+    .sort((a, b) => a.firstDate.localeCompare(b.firstDate));
+
+  if (!pins.length) {
+    document.getElementById('map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--light-text);font-size:14px">No destinations with known coordinates yet — add more destinations!</div>';
+    return;
+  }
+
+  // Init map
+  mapInstance = L.map('map', { zoomControl: true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+  }).addTo(mapInstance);
+
+  // Draw dotted route line
+  if (pins.length > 1) {
+    L.polyline(pins.map(p => p.coords), {
+      color: '#d4829a',
+      weight: 2,
+      dashArray: '6 8',
+      opacity: 0.6
+    }).addTo(mapInstance);
+  }
+
+  // Add numbered markers
+  const locationCount = {};
+  pins.forEach((pin, i) => {
+    const color = getMonthColor(pin.firstDate);
+
+    // Slightly offset pins in the same location so they don't overlap
+    locationCount[pin.loc] = (locationCount[pin.loc] || 0) + 1;
+    const offset = locationCount[pin.loc] - 1;
+    const offsetCoords = [
+      pin.coords[0] + offset * 0.04,
+      pin.coords[1] + offset * 0.06,
+    ];
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        background:${color};
+        color:#fff;
+        width:32px;height:32px;
+        border-radius:50% 50% 50% 0;
+        transform:rotate(-45deg);
+        border:2px solid #fff;
+        box-shadow:0 2px 8px rgba(0,0,0,.25);
+        display:flex;align-items:center;justify-content:center;
+      "><span style="transform:rotate(45deg);font-size:12px;font-weight:700">${i+1}</span></div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -34],
+    });
+
+    const firstDay = pin.days[0];
+    const dateRange = pin.firstDate === pin.lastDate
+      ? formatDate(pin.firstDate)
+      : `${formatDate(pin.firstDate)} → ${formatDate(pin.lastDate)}`;
+    const accomLine = pin.accom ? `<div class="popup-row">🏨 <strong>${pin.accom}</strong></div>` : '';
+    const acts = firstDay.activities ? `<div class="popup-row">🗺 ${firstDay.activities.substring(0,80)}${firstDay.activities.length>80?'…':''}</div>` : '';
+
+    L.marker(offsetCoords, { icon })
+      .addTo(mapInstance)
+      .bindPopup(`
+        <div class="popup-title">${pin.loc}</div>
+        <div class="popup-dates">${dateRange}</div>
+        <div class="popup-row">📅 <strong>${pin.days.length} day${pin.days.length!==1?'s':''}</strong></div>
+        ${accomLine}${acts}
+      `, { maxWidth: 240 });
+  });
+
+  // Fit map to all pins
+  mapInstance.fitBounds(L.latLngBounds(pins.map(p => p.coords)), { padding: [40, 40] });
+
+  // Legend
+  const monthsSeen = {};
+  pins.forEach(p => {
+    const d = new Date(p.firstDate + 'T00:00:00');
+    const key = d.toLocaleDateString('en-GB', { month:'short', year:'numeric' });
+    if (!monthsSeen[key]) monthsSeen[key] = getMonthColor(p.firstDate);
+  });
+  document.getElementById('map-legend').innerHTML = Object.entries(monthsSeen).map(([label, color]) =>
+    `<div class="map-legend-item"><div class="map-legend-dot" style="background:${color}"></div>${label}</div>`
+  ).join('');
+}
+
+// Override showTab to init map when map tab is opened
+const _origShowTab = showTab;
+showTab = function(id, btn) {
+  _origShowTab(id, btn);
+  if (id === 'map') setTimeout(renderMap, 50);
+};
+</script>
+</body>
+</html>
